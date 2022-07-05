@@ -42,53 +42,93 @@ public class AllOnAllEphemerisScreening {
         //if required:
         //ssh-add .ssh/grey-key.pem
 
+        //create runtime command
+        //Command command = new Command();
+
+
+        //----------Test Bed ----------------------------------
         // --------------- outer loop ------------------------
-        //for (String yeardoy : new String[]{ "2021341" }) {
-        for (String yeardoy : new String[]{ "2022164" }) {
+        //String[] loop = new String[]{ "2022174"};
+        //String[] loop = new String[]{ "2022164","2022165","2022166","2022167","2022168" };
+
+        //convert files and do the initial screening
+        //Initialize init = new Initialize(loop);
+        //init.start();
+        //init.startVCMBased("with debris");
+        //init.oneVCMBased(43428,30524);
+
+        //monitor progress on the jobs
+        //init.monitor();
+
+        //process initial results (filtered_many_many_yeardoy.csv)
+        //downlaods results, creates filtered csv, then processes them and creates the operator comparison csv
+        //init.parseManyMany();
 
 
-            // --------------- auto created inputs ------------------------
+        // ------ Full catalog screening based on VCM for Department of commerce-------------------------
+        // --------------- outer loop ------------------------
+        //String[] loop = new String[]{ "2022174"};
 
-            //input SP Ephem Folder
-            File spEphemFolder = new File(String.format("/Users/connergrey/Documents/SP EPHEMS/SPEphemeris_%s",yeardoy));
+        //convert files and do the initial screening
+        //Initialize init = new Initialize(loop);
+        //init.startVCMBased("with debris");
 
-            // sp vector path
-            String path = null;
-            int year = Integer.parseInt( yeardoy.substring(0,4) );
-            //for 2022 files
-            if(year == 2022) {
-                path = "/Users/connergrey/Documents/SP VECTORS/vectors_" + yeardoy.substring(2) + "/scratch/SP_VEC";
-                //for 2021 files
-            }else if(year == 2021) {
-                path = "/Users/connergrey/Documents/SP VECTORS/vectors_" + yeardoy + "/scratch/SP_VEC";
-            }else{
-                System.out.println("error");
-            }
+        //monitor progress on the jobs
+        //init.monitor();
 
-            //local folder to write to
-            String local = String.format("screen_%s",yeardoy);
+        //process initial results (filtered_many_many_yeardoy.csv)
+        //downlaods results, creates filtered csv, then processes them and creates the operator comparison csv
+        //init.parseManyMany();
 
-            //output Mod ITC Ephem Folder.. This is where we want to write the Mod ITC SP Ephems to
-            String modITCpathOUT = String.format("/Users/connergrey/AllOnAllEphemerisScreening/%s/ModITCEphems_%s/",local,yeardoy);
 
-            //local EC2 folder where the files will be stored
-            String localRoot = "/mnt/data/grey/";
-            String localFolder = String.format("%s%s/",localRoot,local);
+        //---------For Beacon customer discovery-----------------------------------
+        // --------------- outer loop ------------------------
+        //String[] loop = new String[]{ "2022164","2022165","2022166","2022167","2022168" };
+        String[] loop = new String[]{ "2022164","2022165","2022167","2022168" };
+        //String[] loop = new String[]{ "2022165","2022166","2022167" };
 
-            //name of one on one folder
-            String OneOnOne = String.format("OneOnOne");
-            String Results = String.format("Results_%s",yeardoy);
+        //convert files and do the initial screening
+        Initialize init = new Initialize(loop);
+        //init.startVCMBased("exclude debris");
 
-            ///kcsm file name
-            String kcsmFileName = String.format("many_many_%s.csv",yeardoy);
+        //monitor progress on the jobs
+        //init.monitor();
 
-            //create runtime command
-            Command command = new Command();
+        //process initial results (filtered_many_many_yeardoy.csv)
+        //downlaods results, creates filtered csv, then processes them and creates the operator comparison csv
+        //init.parseManyMany();
 
-            // -----------------------------------------------------------------------------------------------
+
+
+
+
+
+
+        //-----------------------------------------------------------------------------------------------
+        // for one on one runs
+
+        //all jobs are complete, get KCSMs and create one on one folders
+        //init.prepOneOnOne();
+
+        //run one on one commands in parallel
+        //int P = 15; //number of processes that can be run in parallel
+        //boolean[] done = init.runInParallel(P);
+
+        //monitor until complete
+        //init.monitorParallel(done);
+
+        //when theyre ALL DONE, upload and download Results
+        //init.getResults();
+
+        //process results from one on one (Results_yeardoy folders)
+
+
+
+
+
+            /*// -----------------------------------------------------------------------------------------------
 
             // ---------- convert all the SP Ephemeris in input folder to Modified ITC Ephemeris ----------
-
 
             File localFol = new File(local);
             if (!localFol.exists()){localFol.mkdir();} //create folder if it doesnt exist
@@ -97,7 +137,7 @@ public class AllOnAllEphemerisScreening {
             if (!outputFolder.exists()){outputFolder.mkdir();} //create folder if it doesnt exist
 
             System.out.println("Converting SP Ephem...");
-            convertEphemFolder(spEphemFolder,outputFolder,path); //only need to run once per folder, takes a long time
+            convertEphemFolder(spEphemFolder,outputFolder,path,noradOpID); //only need to run once per folder, takes a long time
             System.out.println("SP Ephem conversion complete");
 
             // ----------------------------------------------------------------------------------------------
@@ -133,8 +173,7 @@ public class AllOnAllEphemerisScreening {
             // these ones are constants
             query.write("--screen_length 5 ");
             query.write("--csv_type 2 ");
-            query.write("--ref_kcsm ");
-            query.write("--num_threads 32 ");
+            query.write("--num_threads 6 ");
             query.write("--lic_fname /usr/local/KRATOS/license.txt ");
             query.write("--eop_fname /usr/local/KRATOS/data/finals.data.iau1980.txt ");
             query.write("--sw_fname /usr/local/KRATOS/data/sw-celestrak.csv");
@@ -325,7 +364,8 @@ public class AllOnAllEphemerisScreening {
                         .replace(String.format("%s.vcm",yeardoy),String.format("%s.vcm",oneOnOneName))
                         .replace(String.format("many_many_%s.csv",yeardoy),String.format("%s.csv",oneOnOneName))
                         .replace(String.format("%s/%s/%s.csv",OneOnOne,oneOnOneName,oneOnOneName),String.format("%s/%s.csv",Results,oneOnOneName))
-                        .replace(String.format("ooe_%s.csv",yeardoy),String.format("ooe_%s.csv",oneOnOneName));
+                        .replace(String.format("ooe_%s.csv",yeardoy),String.format("ooe_%s.csv",oneOnOneName))
+                        .replace("--num_threads 6","--num_threads 2");
 
                 oneOnOneQuery.write( changedQuery );
 
@@ -451,27 +491,93 @@ public class AllOnAllEphemerisScreening {
             );
             System.out.println("Unzipped 1-on-1 KCSMs on local");
 
-
+*/
             // ---------------- parse the output --------------------------------------
 
 
 
-        }
+        //}
         // ---------------- end of outer for loop ------------------------------------------------
 
         // ----------------- post processing the data -----------------------------------
 
-/*
-        // organization id to name key map
-        Map< Integer,String > opNames = getOpNameMap();
-
-        for (Integer key : opNames.keySet()){
-            System.out.println( key + " maps to " + opNames.get(key));
-        }
-*/
 
     }
 
+    public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
+        List<Map.Entry<K, V>> list = new ArrayList<>(map.entrySet());
+        list.sort(Collections.reverseOrder( Map.Entry.comparingByValue()) );
+
+        Map<K, V> result = new LinkedHashMap<>();
+        for (Map.Entry<K, V> entry : list) {
+            result.put(entry.getKey(), entry.getValue());
+        }
+
+        return result;
+    }
+
+
+    public static class ConjunctionPairs {
+
+        private static Map<List<Integer>,Integer> conjPairs = new HashMap<>();
+        private static Map< Integer,Integer > noradOpID;
+        private static Map< Integer,String > opNames;
+
+        static {
+            try {
+                //read the satellite.txt file and create the maps
+                noradOpID = AllOnAllEphemerisScreening.getOpIDMap();
+                opNames = AllOnAllEphemerisScreening.getOpNameMap();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+
+        public static void Conjunction(int noradID1, int noradID2){
+
+            //get op ids from norad ids
+            //sets default op ID to zero, which is unknown
+            int id1 = noradOpID.getOrDefault(noradID1, 0);
+            int id2 = noradOpID.getOrDefault(noradID2, 0);
+
+            //add to or create conjunction pair
+            int first  = FastMath.min(id1,id2);
+            int second;
+
+            //carry norad ids along if order swaps
+            int firstNorad;
+            int secondNorad;
+            if(first == id1){
+                second = id2;
+
+                firstNorad = noradID1;
+                secondNorad = noradID2;
+
+            } else{
+                second = id1;
+
+                secondNorad = noradID1;
+                firstNorad = noradID2;
+            }
+
+            //the pair of operator ids
+            List<Integer> pair = new ArrayList<>();
+            pair.add(first);
+            pair.add(second);
+
+            if( conjPairs.containsKey(pair) ) {
+                conjPairs.put(pair, conjPairs.get(pair) + 1);
+            }else{
+                conjPairs.put(pair, 1);
+            }
+
+            //System.out.println(String.format("%s(%d) on %s(%d) : %d"  , opNames.get(pair.get(1)) , secondNorad , opNames.get(pair.get(0)) , firstNorad, conjPairs.get(pair) ));
+        }
+
+        public static Map<List<Integer>, Integer> getConjPairs() {
+            return conjPairs;
+        }
+    }
 
     public static double[] getRICMD(Vector3D pos,Vector3D vel,Vector3D rRel){
 
@@ -547,7 +653,7 @@ public class AllOnAllEphemerisScreening {
 
     }
 
-    public static void convertEphemFolder(File spEphemFolder, File outputFolder, String spVec) throws FileNotFoundException {
+    public static void convertEphemFolder(File spEphemFolder, File outputFolder, String spVec, Map< Integer,Integer > noradOpID) throws FileNotFoundException {
 
         //extract year-doy
         String[] splt = spEphemFolder.toString().split("/");
@@ -577,7 +683,7 @@ public class AllOnAllEphemerisScreening {
                 if(spEphemFile.toString().contains(".DS_Store")){continue;}
 
                 //write modITCephem
-                writeModITCEphem(spEphemFile, yeardoy, outputFolder, spVec, ooe, group, localFolder);
+                writeModITCEphem(spEphemFile, yeardoy, outputFolder, spVec, ooe, group, localFolder, noradOpID);
 
             }
 
@@ -588,7 +694,7 @@ public class AllOnAllEphemerisScreening {
 
     }
 
-    public static void writeModITCEphem(File spEphemFile, String yeardoy, File outputFolder, String spVecPath, PrintWriter ooe, PrintWriter group, String localFolder) throws FileNotFoundException {
+    public static void writeModITCEphem(File spEphemFile, String yeardoy, File outputFolder, String spVecPath, PrintWriter ooe, PrintWriter group, String localFolder, Map< Integer,Integer > noradOpID) throws FileNotFoundException {
 
         TimeScale utc = TimeScalesFactory.getUTC();
 
@@ -601,77 +707,85 @@ public class AllOnAllEphemerisScreening {
 
             String modITCFileName = noradID + "_" + yeardoy + ".txt";
 
+            int norID = Integer.parseInt(noradID);
+            int orgID = noradOpID.getOrDefault(norID , 0);
+            //find the organization ID related to the Norad ID
+            if( orgID != 0 ){
 
-            //open file -> convert to modified itc
-            List<TimeStampedPVCoordinates> tspvListEMEJ2000 = SP2EMEList(spEphemFile);
+                //open file -> convert to modified itc
+                List<TimeStampedPVCoordinates> tspvListEMEJ2000 = SP2EMEList(spEphemFile);
 
-            //check if the ephem file spans the whole time
-            if( tspvListEMEJ2000.get( tspvListEMEJ2000.size()-1 ).getDate().durationFrom( tspvListEMEJ2000.get( 0 ).getDate() ) >= 5*86400 ) {
-                //if we dont have an entire 5 day ephemeris, dont include in screening
-                // ^ a better version of this would check the start and end date, not just the span
-                // make sure screen start date and end date are bounded by ephem start and end date
+                //check if the ephem file spans the whole time
+                if( tspvListEMEJ2000.get( tspvListEMEJ2000.size()-1 ).getDate().durationFrom( tspvListEMEJ2000.get( 0 ).getDate() ) >= 5*86400 ) {
+                    //if we dont have an entire 5 day ephemeris, dont include in screening
+                    // ^ a better version of this would check the start and end date, not just the span
+                    // make sure screen start date and end date are bounded by ephem start and end date
 
 
-                //create file name
-                PrintWriter modifiedITCEphemWriter = new PrintWriter(new File(outputFolder.getAbsolutePath() + "/" + modITCFileName));
+                    //create file name
+                    PrintWriter modifiedITCEphemWriter = new PrintWriter(new File(outputFolder.getAbsolutePath() + "/" + modITCFileName));
 
-                //write modified ITC Ephem
-                //write header lines
-                modifiedITCEphemWriter.write("Header 1\n");
-                modifiedITCEphemWriter.write("Header 2\n");
-                modifiedITCEphemWriter.write("Header 3\n");
-                modifiedITCEphemWriter.write("UVW\n");
+                    //write modified ITC Ephem
+                    //write header lines
+                    modifiedITCEphemWriter.write("Header 1\n");
+                    modifiedITCEphemWriter.write("Header 2\n");
+                    modifiedITCEphemWriter.write("Header 3\n");
+                    modifiedITCEphemWriter.write("UVW\n");
 
-                //write the rest of the file
-                StringBuffer text = new StringBuffer();
-                TimeZone.setDefault(TimeZone.getTimeZone("UTC")); //need to set default time zone... casue its weird
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyDDDHHmmss.SSS", Locale.US);
+                    //write the rest of the file
+                    StringBuffer text = new StringBuffer();
+                    TimeZone.setDefault(TimeZone.getTimeZone("UTC")); //need to set default time zone... casue its weird
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyDDDHHmmss.SSS", Locale.US);
 
-                int i = 0;
-                for (TimeStampedPVCoordinates tspvEME : tspvListEMEJ2000) {
+                    int i = 0;
+                    for (TimeStampedPVCoordinates tspvEME : tspvListEMEJ2000) {
 
-                    //checks that the new line is timestamped after the previous line
-                    //solves the error of having two lines with the same time
-                    if( i == 0 || tspvListEMEJ2000.get(i).getDate().isAfter( tspvListEMEJ2000.get(i-1).getDate() )) {
+                        //checks that the new line is timestamped after the previous line
+                        //solves the error of having two lines with the same time
+                        if( i == 0 || tspvListEMEJ2000.get(i).getDate().isAfter( tspvListEMEJ2000.get(i-1).getDate() )) {
 
-                        //System.out.println(tspvEME.getDate().toString());
-                        //System.out.println(dateFormat.format(tspvEME.getDate().toDate(utc)));
-                        //write position and velocity data
-                        text.append(dateFormat.format(tspvEME.getDate().toDate(utc))).append(" ");
-                        text.append(String.format("%.10f ", tspvEME.getPosition().getX()));
-                        text.append(String.format("%.10f ", tspvEME.getPosition().getY()));
-                        text.append(String.format("%.10f ", tspvEME.getPosition().getZ()));
-                        text.append(String.format("%.10f ", tspvEME.getVelocity().getX()));
-                        text.append(String.format("%.10f ", tspvEME.getVelocity().getY()));
-                        text.append(String.format("%.10f\n", tspvEME.getVelocity().getZ()));
+                            //System.out.println(tspvEME.getDate().toString());
+                            //System.out.println(dateFormat.format(tspvEME.getDate().toDate(utc)));
+                            //write position and velocity data
+                            text.append(dateFormat.format(tspvEME.getDate().toDate(utc))).append(" ");
+                            text.append(String.format("%.10f ", tspvEME.getPosition().getX()));
+                            text.append(String.format("%.10f ", tspvEME.getPosition().getY()));
+                            text.append(String.format("%.10f ", tspvEME.getPosition().getZ()));
+                            text.append(String.format("%.10f ", tspvEME.getVelocity().getX()));
+                            text.append(String.format("%.10f ", tspvEME.getVelocity().getY()));
+                            text.append(String.format("%.10f\n", tspvEME.getVelocity().getZ()));
 
-                        //write covariance
-                        text.append("0.0000000000e+00 0.0000000000e+00 0.0000000000e+00 0.0000000000e+00 0.0000000000e+00 0.0000000000e+00 0.0000000000e+00\n");
-                        text.append("0.0000000000e+00 0.0000000000e+00 0.0000000000e+00 0.0000000000e+00 0.0000000000e+00 0.0000000000e+00 0.0000000000e+00\n");
-                        text.append("0.0000000000e+00 0.0000000000e+00 0.0000000000e+00 0.0000000000e+00 0.0000000000e+00 0.0000000000e+00 0.0000000000e+00\n");
+                            //write covariance
+                            text.append("0.0000000000e+00 0.0000000000e+00 0.0000000000e+00 0.0000000000e+00 0.0000000000e+00 0.0000000000e+00 0.0000000000e+00\n");
+                            text.append("0.0000000000e+00 0.0000000000e+00 0.0000000000e+00 0.0000000000e+00 0.0000000000e+00 0.0000000000e+00 0.0000000000e+00\n");
+                            text.append("0.0000000000e+00 0.0000000000e+00 0.0000000000e+00 0.0000000000e+00 0.0000000000e+00 0.0000000000e+00 0.0000000000e+00\n");
 
-                        //write the string and delete
-                        modifiedITCEphemWriter.write(text.toString());
-                        text.delete(0, text.length());
+                            //write the string and delete
+                            modifiedITCEphemWriter.write(text.toString());
+                            text.delete(0, text.length());
+                        }
+                        i++;
                     }
-                    i++;
+
+                    System.out.println(String.format( "%s created" , modITCFileName));
+                    modifiedITCEphemWriter.close();
+
+                    //write to ooe and groups.txt
+                    ooe.write(String.format("%s,%sModITCEphems_%s/%s\n",noradID,localFolder,yeardoy,modITCFileName));
+                    group.write(noradID + "\n");
+
+                }else{
+                    System.out.println("Ephemeris does not span the entire window for " + noradID);
                 }
 
-                System.out.println(String.format( "%s created" , modITCFileName));
-                modifiedITCEphemWriter.close();
-
-                //write to ooe and groups.txt
-                ooe.write(String.format("%s,%sModITCEphems_%s/%s\n",noradID,localFolder,yeardoy,modITCFileName));
-                group.write(noradID + "\n");
-
             }else{
-                System.out.println("Ephemeris does not span the entire window for " + noradID);
+                System.out.println(noradID + " is from an Unknown organization");
             }
+
 
         }else{
             System.out.println("VCM does not exist for " + noradID);
         }
-
 
 
     }
@@ -736,6 +850,109 @@ public class AllOnAllEphemerisScreening {
         scan.close();
         return ephemerisPV;
 
+    }
+
+    public static Map< Integer, String > getOpNameMap() throws FileNotFoundException {
+        //Map from Operator ID to Operator Name
+
+        // loop through the file
+        // add all unique ids to
+
+        Scanner scan = new Scanner(new File("Spacecraft.txt"));
+        String[] headers = scan.nextLine().split("\\|");
+
+        // i want to type in a name of the header, like catalog number, and get the index
+        int noradIDInd = findIndex("Catalogue Number" , headers);
+        int ownerIDInd = findIndex("Spacecraft Owner ID" , headers);
+        int ownerInd = findIndex("Spacecraft Owner" , headers);
+        int operatorIDInd = findIndex("Spacecraft Operator ID" , headers);
+        int operatorInd = findIndex("Spacecraft Operator" , headers);
+
+        //All norad IDs mapping to operator IDs
+        Map< Integer,String > opIDName = new HashMap<>();
+
+        //add DEBRIS as zero
+        opIDName.put(0,"Unknown");
+
+        //loop over all rows in the spacecraft.csv file
+        while (scan.hasNextLine()) {
+
+            String[] row = scan.nextLine().split("\\|");
+
+            // add the norad id as key, operator id as value
+
+            String opIDStr = row[operatorIDInd];
+
+            Integer opID = Integer.parseInt(opIDStr);
+            String opNameStr = row[operatorInd];
+
+            opIDName.putIfAbsent(opID,opNameStr);
+
+        }
+
+
+        return opIDName;
+    }
+
+    public static Map< Integer, Integer > getOpIDMap() throws FileNotFoundException {
+        //Map from norad ID to op ID
+        //Input a Norad ID, output the Operator Organization ID
+
+        Scanner scan = new Scanner(new File("Spacecraft.txt"));
+        String[] headers = scan.nextLine().split("\\|");
+
+        // i want to type in a name of the header, like catalog number, and get the index
+        int noradIDInd = findIndex("Catalogue Number" , headers);
+        int ownerIDInd = findIndex("Spacecraft Owner ID" , headers);
+        int ownerInd = findIndex("Spacecraft Owner" , headers);
+        int operatorIDInd = findIndex("Spacecraft Operator ID" , headers);
+        int operatorInd = findIndex("Spacecraft Operator" , headers);
+
+        //All norad IDs mapping to operator IDs
+        Map< Integer,Integer > noradOpID = new HashMap<>();
+        //loop over all rows in the spacecraft.csv file
+        while (scan.hasNextLine()) {
+
+            String[] row = scan.nextLine().split("\\|");
+
+            // add the norad id as key, operator id as value
+
+            String noradIDStr = row[noradIDInd];
+            String opIDStr = row[operatorIDInd];
+
+            // handle the error cases
+            try{
+                Integer.parseInt(noradIDStr);
+            }catch(Exception e){
+                if (noradIDStr.equals("")){
+                    continue;
+                }else if(noradIDStr.contains("B") || noradIDStr.contains("A") || noradIDStr.contains("U") ){
+                    continue;
+                }
+
+            }
+            Integer noradID = Integer.parseInt(noradIDStr);
+            Integer opID = Integer.parseInt(opIDStr);
+
+            noradOpID.putIfAbsent(noradID, opID);
+        }
+        scan.close();
+
+        return noradOpID;
+    }
+
+
+    public static int findIndex(String input , String[] headers){
+
+        int index = -1;
+        for(int i = 0; i < headers.length; i++){
+            String head = headers[i];
+            if(head.equals(input)){
+                index = i;
+                break;
+            }
+        }
+        return index;
     }
 
 

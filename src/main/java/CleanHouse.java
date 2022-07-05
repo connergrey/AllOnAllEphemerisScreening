@@ -8,7 +8,7 @@ public class CleanHouse {
 
         //String yeardoy = "2021341";
         //String[] yeardoys = {"2022056","2021341"};
-        String[] yeardoys = {"2022164"};
+        String[] yeardoys = { "2022164","2022165","2022166","2022167","2022168" };
         for (String yeardoy :
                 yeardoys) {
 

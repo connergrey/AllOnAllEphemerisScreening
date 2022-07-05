@@ -134,7 +134,7 @@ public class ModifiedParseOutput {
                         conjunctionMap.get(satIDs).add(newConj);
 
                         //increment the count
-                        ConjunctionPairs.Conjunction(satIDs.get(0), satIDs.get(1));
+                        AllOnAllEphemerisScreening.ConjunctionPairs.Conjunction(satIDs.get(0), satIDs.get(1));
                         i++;
 
                     } else {
@@ -145,7 +145,7 @@ public class ModifiedParseOutput {
                         conjunctionMap.put(satIDs, newConjList);
 
                         //increment the count
-                        ConjunctionPairs.Conjunction(satIDs.get(0), satIDs.get(1));
+                        AllOnAllEphemerisScreening.ConjunctionPairs.Conjunction(satIDs.get(0), satIDs.get(1));
                         j++;
                     }
 
@@ -167,8 +167,8 @@ public class ModifiedParseOutput {
 
 
         //load the conjunction pairs reults
-        Map<List<Integer>,Integer> conjPairs = ConjunctionPairs.getConjPairs();//pair of operator IDs, and the number of conjunctions between them
-        Map< Integer,String > opNames = getOpNameMap();
+        Map<List<Integer>,Integer> conjPairs = AllOnAllEphemerisScreening.ConjunctionPairs.getConjPairs();//pair of operator IDs, and the number of conjunctions between them
+        Map< Integer,String > opNames = AllOnAllEphemerisScreening.getOpNameMap();
 
 /*        int count = 0;
         for (List<Integer> pair : conjPairs.keySet()){
@@ -179,7 +179,7 @@ public class ModifiedParseOutput {
         System.out.println(count);*/
 
         //sort the conjunction pairs
-        Map<List<Integer>,Integer> sortedConjPairs = sortByValue(conjPairs);
+        Map<List<Integer>,Integer> sortedConjPairs = AllOnAllEphemerisScreening.sortByValue(conjPairs);
 
                 int count = 0;
         for (List<Integer> pair : sortedConjPairs.keySet()){
@@ -263,182 +263,5 @@ public class ModifiedParseOutput {
 
     }
 
-    public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
-        List<Map.Entry<K, V>> list = new ArrayList<>(map.entrySet());
-        list.sort(Collections.reverseOrder( Map.Entry.comparingByValue()) );
-
-        Map<K, V> result = new LinkedHashMap<>();
-        for (Map.Entry<K, V> entry : list) {
-            result.put(entry.getKey(), entry.getValue());
-        }
-
-        return result;
-    }
-
-
-    public static class ConjunctionPairs {
-
-        private static Map<List<Integer>,Integer> conjPairs = new HashMap<>();
-        private static Map< Integer,Integer > noradOpID;
-        private static Map< Integer,String > opNames;
-
-        static {
-            try {
-                //read the satellite.txt file and create the maps
-                noradOpID = getOpIDMap();
-                opNames = getOpNameMap();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
-
-        public static void Conjunction(int noradID1, int noradID2){
-
-            //get op ids from norad ids
-            //sets default op ID to zero, which is unknown
-            int id1 = noradOpID.getOrDefault(noradID1, 0);
-            int id2 = noradOpID.getOrDefault(noradID2, 0);
-
-            //add to or create conjunction pair
-            int first  = FastMath.min(id1,id2);
-            int second;
-
-            //carry norad ids along if order swaps
-            int firstNorad;
-            int secondNorad;
-            if(first == id1){
-                second = id2;
-
-                firstNorad = noradID1;
-                secondNorad = noradID2;
-
-            } else{
-                second = id1;
-
-                secondNorad = noradID1;
-                firstNorad = noradID2;
-            }
-
-            //the pair of operator ids
-            List<Integer> pair = new ArrayList<>();
-            pair.add(first);
-            pair.add(second);
-
-            if( conjPairs.containsKey(pair) ) {
-                conjPairs.put(pair, conjPairs.get(pair) + 1);
-            }else{
-                conjPairs.put(pair, 1);
-            }
-
-            //System.out.println(String.format("%s(%d) on %s(%d) : %d"  , opNames.get(pair.get(1)) , secondNorad , opNames.get(pair.get(0)) , firstNorad, conjPairs.get(pair) ));
-        }
-
-        public static Map<List<Integer>, Integer> getConjPairs() {
-            return conjPairs;
-        }
-    }
-
-    public static Map< Integer, String > getOpNameMap() throws FileNotFoundException {
-        //Map from Operator ID to Operator Name
-
-        // loop through the file
-        // add all unique ids to
-
-        Scanner scan = new Scanner(new File("Spacecraft.txt"));
-        String[] headers = scan.nextLine().split("\\|");
-
-        // i want to type in a name of the header, like catalog number, and get the index
-        int noradIDInd = findIndex("Catalogue Number" , headers);
-        int ownerIDInd = findIndex("Spacecraft Owner ID" , headers);
-        int ownerInd = findIndex("Spacecraft Owner" , headers);
-        int operatorIDInd = findIndex("Spacecraft Operator ID" , headers);
-        int operatorInd = findIndex("Spacecraft Operator" , headers);
-
-        //All norad IDs mapping to operator IDs
-        Map< Integer,String > opIDName = new HashMap<>();
-
-        //add DEBRIS as zero
-        opIDName.put(0,"Unknown");
-
-        //loop over all rows in the spacecraft.csv file
-        while (scan.hasNextLine()) {
-
-            String[] row = scan.nextLine().split("\\|");
-
-            // add the norad id as key, operator id as value
-
-            String opIDStr = row[operatorIDInd];
-
-            Integer opID = Integer.parseInt(opIDStr);
-            String opNameStr = row[operatorInd];
-
-            opIDName.putIfAbsent(opID,opNameStr);
-
-        }
-
-
-        return opIDName;
-    }
-
-    public static Map< Integer, Integer > getOpIDMap() throws FileNotFoundException {
-        //Map from norad ID to op ID
-        //Input a Norad ID, output the Operator Organization ID
-
-        Scanner scan = new Scanner(new File("Spacecraft.txt"));
-        String[] headers = scan.nextLine().split("\\|");
-
-        // i want to type in a name of the header, like catalog number, and get the index
-        int noradIDInd = findIndex("Catalogue Number" , headers);
-        int ownerIDInd = findIndex("Spacecraft Owner ID" , headers);
-        int ownerInd = findIndex("Spacecraft Owner" , headers);
-        int operatorIDInd = findIndex("Spacecraft Operator ID" , headers);
-        int operatorInd = findIndex("Spacecraft Operator" , headers);
-
-        //All norad IDs mapping to operator IDs
-        Map< Integer,Integer > noradOpID = new HashMap<>();
-        //loop over all rows in the spacecraft.csv file
-        while (scan.hasNextLine()) {
-
-            String[] row = scan.nextLine().split("\\|");
-
-            // add the norad id as key, operator id as value
-
-            String noradIDStr = row[noradIDInd];
-            String opIDStr = row[operatorIDInd];
-
-            // handle the error cases
-            try{
-                Integer.parseInt(noradIDStr);
-            }catch(Exception e){
-                if (noradIDStr.equals("")){
-                    continue;
-                }else if(noradIDStr.contains("B") || noradIDStr.contains("A") || noradIDStr.contains("U") ){
-                    continue;
-                }
-
-            }
-            Integer noradID = Integer.parseInt(noradIDStr);
-            Integer opID = Integer.parseInt(opIDStr);
-
-            noradOpID.putIfAbsent(noradID, opID);
-        }
-        scan.close();
-
-        return noradOpID;
-    }
-
-
-    public static int findIndex(String input , String[] headers){
-
-        int index = -1;
-        for(int i = 0; i < headers.length; i++){
-            String head = headers[i];
-            if(head.equals(input)){
-                index = i;
-                break;
-            }
-        }
-        return index;
-    }
 
 }

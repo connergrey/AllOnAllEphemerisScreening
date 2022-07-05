@@ -201,12 +201,13 @@ public class OneOnOneScreening {
                         .replace(String.format("%s.vcm", yeardoy), String.format("%s.vcm", oneOnOneName))
                         .replace(String.format("many_many_%s.csv", yeardoy), String.format("%s.csv", oneOnOneName))
                         .replace(String.format("%s/%s/%s.csv", OneOnOne, oneOnOneName, oneOnOneName), String.format("%s/%s.csv", Results, oneOnOneName))
-                        .replace(String.format("ooe_%s.csv", yeardoy), String.format("ooe_%s.csv", oneOnOneName));
+                        .replace(String.format("ooe_%s.csv", yeardoy), String.format("ooe_%s.csv", oneOnOneName))
+                        .replace("--num_threads 6","--num_threads 2");
 
                 oneOnOneQuery.write(changedQuery);
 
                 //add the extra arguments
-                oneOnOneQuery.write(String.format(" --satnum_pri %d --satnum_sec %d --multi_conj", pri, sec));
+                oneOnOneQuery.write(String.format(" --satnum_pri %d --satnum_sec %d --multi_conj --ref_kcsm", pri, sec));
 
                 oneOnOneQuery.close();
                 oneOnOneScan.close();
@@ -260,6 +261,14 @@ public class OneOnOneScreening {
                     String.format("'mkdir %s%s'", localFolder, Results)
             );
 
+
+
+
+
+
+
+
+
             StringBuffer buf = new StringBuffer();
             buf.append("'source /usr/local/KRATOS/env_linux.sh; ");
             // ------------- send command to EC2 to run ALL the 1-on-1 queries -----------------
@@ -299,9 +308,20 @@ public class OneOnOneScreening {
 
 
 
+
+
+
+
             System.out.println("Kratos 1-on-1 end");
             // ----------------------------------------------------------------------------------------------
             // ------------- get output file from EC2 -----------------
+
+
+
+
+
+
+
 
             //zip up results folder on EC2
             command.sendEC2(
